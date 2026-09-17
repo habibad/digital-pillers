@@ -127,14 +127,25 @@ export function ServiceDetailModal({
           </div>
 
           <div className="md:col-span-5">
-            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden glass-panel border border-white/10 shadow-lg">
-              <Image
-                src={service.image}
-                alt={service.title}
-                fill
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden glass-panel border border-white/10 shadow-lg bg-[#09090d]">
+              {service.video ? (
+                <video
+                  src={service.video}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Image
+                  src={service.image}
+                  alt={service.title}
+                  fill
+                  className="object-cover"
+                />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
             </div>
           </div>
         </div>

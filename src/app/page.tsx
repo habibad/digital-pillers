@@ -13,6 +13,7 @@ import { FoundationLayersSection } from "@/components/sections/FoundationLayersS
 import { InquiryTerminalSection } from "@/components/sections/InquiryTerminalSection";
 import { Footer } from "@/components/navigation/Footer";
 import { ServiceDetailModal } from "@/components/modals/ServiceDetailModal";
+import { AiAssistantWidget } from "@/components/widgets/AiAssistantWidget";
 
 export default function HomePage() {
   const [selectedService, setSelectedService] = useState<string | null>(null);
@@ -51,6 +52,9 @@ export default function HomePage() {
 
       {/* Minimalist Studio Footer */}
       <Footer />
+
+      {/* Floating Interactive AI Assistant Widget */}
+      <AiAssistantWidget />
 
       {/* Service Deep Dive Modal Overlay */}
       <ServiceDetailModal

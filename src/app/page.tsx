@@ -10,6 +10,7 @@ import { SignalSection } from "@/components/sections/SignalSection";
 import { AssemblySection } from "@/components/sections/AssemblySection";
 import { ServicesBentoSection } from "@/components/sections/ServicesBentoSection";
 import { FoundationLayersSection } from "@/components/sections/FoundationLayersSection";
+import { SocialProofSection } from "@/components/sections/SocialProofSection";
 import { InquiryTerminalSection } from "@/components/sections/InquiryTerminalSection";
 import { Footer } from "@/components/navigation/Footer";
 import { ServiceDetailModal } from "@/components/modals/ServiceDetailModal";
@@ -46,6 +47,9 @@ export default function HomePage() {
 
       {/* Foundation Architecture Layers */}
       <FoundationLayersSection />
+
+      {/* Social Proof & Client Impact Ledger */}
+      <SocialProofSection />
 
       {/* High-Conversion Inquiry Terminal & Brief Strength Meter */}
       <InquiryTerminalSection />

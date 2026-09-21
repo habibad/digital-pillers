@@ -1,0 +1,3 @@
+import Header from "@/components/home/Header";
+import Footer from "@/components/home/Footer";
+export default function ContactPage(){return <main className="inner-page"><Header/><section className="inner-hero page-shell"><span className="section-label">START A PROJECT</span><h1>Tell us what you are building.</h1><p>Connect this page to the studio's preferred form, CRM or scheduling tool. The route and visual shell are ready.</p><a className="magnetic-button magnetic-button--primary" href="mailto:hello@digitalpillars.example"><span>hello@digitalpillars.example</span><span className="button-arrow">↗</span></a></section><Footer/></main>}

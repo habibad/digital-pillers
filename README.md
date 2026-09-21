@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Digital Pillars — Next.js cinematic homepage
 
-## Getting Started
+A fresh Next.js App Router build based on the approved dark/cinematic Digital Pillars concept. The homepage is fully structured as reusable React components and uses the client-supplied media from the original ZIP.
 
-First, run the development server:
+## Stack
+
+- Next.js App Router + TypeScript
+- Three.js hero scene (custom procedural "growth pillars" — no pasted AI hero image)
+- GSAP + ScrollTrigger for in-view choreography
+- Lenis for smooth wheel scrolling
+- CSS glass UI, pointer tilt, magnetic CTAs
+- Lazy-loaded client MP4 media below the fold
+- `prefers-reduced-motion` fallback
+
+## Routes
+
+- `/` — full homepage
+- `/services` — service index
+- `/services/performance-marketing`
+- `/services/social-brand-presence`
+- `/services/web-digital-experiences`
+- `/services/growth-strategy-advisory`
+- `/work`
+- `/reviews`
+- `/about`
+- `/contact`
+
+The supporting routes intentionally use a clean page shell so they are ready to be expanded without blocking the finished homepage.
+
+## Run
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Client media used
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Assets from the supplied archive are copied to `public/media/`, including `assembly-video.mp4`, `desk-video.mp4`, `hero-video.mp4`, the pillar/foundation/construction/signal imagery and the service images. The homepage deliberately lazy-loads heavy video so those files do not compete with the initial hero render.
 
-## Learn More
+## Performance notes
 
-To learn more about Next.js, take a look at the following resources:
+- The hero is a lightweight procedural Three.js scene and does **not** require a large GLB download.
+- Heavy MP4 files use `preload="none"` and are attached only near the viewport.
+- Mobile removes cursor-only interactions and simplifies the composition.
+- Three.js particle count and device pixel ratio are reduced on touch/small screens.
+- All DOM choreography uses `transform` / `opacity`.
+- `prefers-reduced-motion` stops continuous scene movement and reveals content statically.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+For a production 90+ Lighthouse target, transcode the supplied MP4 files to smaller H.264/WebM variants and replace any illustrative dashboard numbers/testimonials with verified client data before launch.

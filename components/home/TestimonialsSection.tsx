@@ -1,29 +1,126 @@
-import { testimonials } from "@/lib/data";
-import TiltCard from "@/components/ui/TiltCard";
+"use client";
+
+import { useRef, useEffect } from "react";
+import gsap from "gsap";
+import CarouselControls from "./CarouselControls";
+import TestimonialCarousel from "./TestimonialCarousel";
 
 export default function TestimonialsSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const controllerRef = useRef<{
+    prev: () => void;
+    next: () => void;
+  } | null>(null);
+
+  // GSAP Staged Scroll Entrance Animation
+  useEffect(() => {
+    const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (isReduced || !sectionRef.current) return;
+
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({
+        paused: true,
+        defaults: { ease: "power3.out" },
+      });
+
+      tl.fromTo(
+        ".testimonials-eyebrow",
+        { y: 16, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6 }
+      )
+        .fromTo(
+          ".testimonials-headline-text",
+          { yPercent: 45, opacity: 0 },
+          { yPercent: 0, opacity: 1, duration: 0.85, stagger: 0.12 },
+          "-=0.4"
+        )
+        .fromTo(
+          ".carousel-controls-group",
+          { x: 20, opacity: 0 },
+          { x: 0, opacity: 1, duration: 0.7 },
+          "-=0.6"
+        )
+        .fromTo(
+          ".testimonial-slide-cell",
+          { y: 35, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.8, stagger: 0.08 },
+          "-=0.5"
+        )
+        .fromTo(
+          ".testimonial-card-item.is-active .testimonial-card-glow-layer",
+          { opacity: 0, scale: 0.95 },
+          { opacity: 1, scale: 1, duration: 0.9, ease: "power2.out" },
+          "-=0.4"
+        );
+
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            tl.play();
+            observer.disconnect();
+          }
+        },
+        { threshold: 0.12 }
+      );
+
+      if (sectionRef.current) {
+        observer.observe(sectionRef.current);
+      }
+
+      return () => observer.disconnect();
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <section className="section testimonials-section" id="reviews">
-      <div className="page-shell">
-        <div className="section-head testimonials-head">
-          <div data-reveal="up">
-            <span className="section-label">CLIENT PERSPECTIVE</span>
-            <h2>Trusted by ambitious teams.</h2>
+    <section
+      className="testimonials-section"
+      id="reviews"
+      ref={sectionRef}
+      aria-label="Client Testimonials"
+    >
+      {/* Subtle Atmospheric Backdrop Layer */}
+      <div className="testimonials-backdrop" aria-hidden="true">
+        <div className="testimonials-ambient-glow" />
+        <div className="testimonials-seam-top" />
+        <div className="testimonials-seam-bottom" />
+      </div>
+
+      <div className="page-shell testimonials-shell">
+        {/* Top Header Grid: Left Headline + Right Navigation Arrows */}
+        <div className="testimonials-header-grid">
+          {/* Top Left: Eyebrow + Large Elegant Two-line Headline */}
+          <div className="testimonials-headline-block">
+            <div className="testimonials-eyebrow">
+              <span className="testimonials-eyebrow-dot" />
+              <span>REAL OUTCOMES</span>
+            </div>
+            <h2 className="testimonials-headline">
+              <span className="testimonials-headline-row">
+                <span className="testimonials-headline-text">Trusted</span>
+              </span>
+              <span className="testimonials-headline-row">
+                <span className="testimonials-headline-text">
+                  by ambitious brands.
+                </span>
+              </span>
+            </h2>
           </div>
-          <p className="review-disclaimer" data-reveal="left">Sample review layout — replace with verified client testimonials before launch.</p>
+
+          {/* Top Right: Circular Arrow Navigation Controls */}
+          <div className="testimonials-controls-block">
+            <CarouselControls
+              onPrev={() => controllerRef.current?.prev()}
+              onNext={() => controllerRef.current?.next()}
+            />
+          </div>
         </div>
-        <div className="testimonials-grid">
-          {testimonials.map((item, index) => (
-            <TiltCard className={`testimonial-card glass-card ${index === 1 ? "is-featured" : ""}`} key={item.quote}>
-              <div className="quote-mark">“</div>
-              <p>{item.quote}</p>
-              <div className="review-meta">
-                <span className="review-avatar">{item.role.charAt(0)}</span>
-                <div><strong>{item.role}</strong><span>{item.company}</span></div>
-              </div>
-            </TiltCard>
-          ))}
-        </div>
+      </div>
+
+      {/* Horizontally Overflowing Carousel Viewport */}
+      <div className="testimonials-carousel-viewport">
+        <TestimonialCarousel controllerRef={controllerRef} />
       </div>
     </section>
   );

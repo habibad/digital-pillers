@@ -128,8 +128,12 @@ export default function ProcessSection() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const timelineWrapRef = useRef<HTMLDivElement>(null);
   const nodeRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const pulsePathRef = useRef<SVGPathElement>(null);
-  const pulseTweenRef = useRef<gsap.core.Tween | null>(null);
+  const stepItemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const traveledPathRef = useRef<SVGPathElement>(null);
+  const bodyPathRef = useRef<SVGPathElement>(null);
+  const headPathRef = useRef<SVGPathElement>(null);
+  const pulseTimelineRef = useRef<gsap.core.Timeline | null>(null);
+  const nodeRangesRef = useRef<{ start: number; end: number }[]>([]);
 
   const [pathD, setPathD] = useState<string>("");
 
@@ -162,6 +166,14 @@ export default function ProcessSection() {
       const startY = Math.max(0, points[0].cy - r - 24);
       d += `M ${cx} ${startY} L ${cx} ${points[0].cy - r}`;
 
+      const entranceLen = points[0].cy - r - startY;
+      const loopLen = 3 * Math.PI * r;
+      const ranges: { start: number; end: number }[] = [];
+
+      let currentCursor = entranceLen;
+      ranges.push({ start: currentCursor, end: currentCursor + loopLen });
+      currentCursor += loopLen;
+
       points.forEach((pt, idx) => {
         const cy = pt.cy;
         const topY = cy - r;
@@ -175,8 +187,13 @@ export default function ProcessSection() {
         if (idx < points.length - 1) {
           const nextTopY = points[idx + 1].cy - r;
           d += ` L ${cx} ${nextTopY}`;
+          const distNext = nextTopY - botY;
+          currentCursor += distNext;
+          ranges.push({ start: currentCursor, end: currentCursor + loopLen });
+          currentCursor += loopLen;
         }
       });
+      nodeRangesRef.current = ranges;
     } else {
       // Desktop: Horizontal flow
       // Enters left (9 o'clock) of Node 1
@@ -186,6 +203,14 @@ export default function ProcessSection() {
       const cy = points[0].cy;
       const startX = Math.max(0, points[0].cx - r - 40);
       d += `M ${startX} ${cy} L ${points[0].cx - r} ${cy}`;
+
+      const entranceLen = points[0].cx - r - startX;
+      const loopLen = 3 * Math.PI * r;
+      const ranges: { start: number; end: number }[] = [];
+
+      let currentCursor = entranceLen;
+      ranges.push({ start: currentCursor, end: currentCursor + loopLen });
+      currentCursor += loopLen;
 
       points.forEach((pt, idx) => {
         const cx = pt.cx;
@@ -204,8 +229,13 @@ export default function ProcessSection() {
           const nextLeftX = points[idx + 1].cx - r;
           // Straight line connects right side of current icon to left side of next icon
           d += ` L ${nextLeftX} ${cy}`;
+          const distNext = nextLeftX - rightX;
+          currentCursor += distNext;
+          ranges.push({ start: currentCursor, end: currentCursor + loopLen });
+          currentCursor += loopLen;
         }
       });
+      nodeRangesRef.current = ranges;
     }
 
     setPathD(d);
@@ -236,45 +266,107 @@ export default function ProcessSection() {
   }, [updateCircuitPath]);
 
   // Animate the single continuous traveling pulse along the 540° circuit
+  // with a thick snake head ("shaper matha mota"), tapering body, and thin already-traveled illuminated trail
   useEffect(() => {
-    const pulsePath = pulsePathRef.current;
-    if (!pulsePath || !pathD) return;
+    const traveledPath = traveledPathRef.current;
+    const bodyPath = bodyPathRef.current;
+    const headPath = headPathRef.current;
+    if (!traveledPath || !bodyPath || !headPath || !pathD) return;
 
     const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (isReduced) return;
 
     try {
-      const totalLen = pulsePath.getTotalLength();
+      const totalLen = traveledPath.getTotalLength();
       if (!totalLen || isNaN(totalLen)) return;
 
-      // Pulse length (~160px of glowing electric beam)
-      const pulseLen = Math.min(170, totalLen * 0.12);
-
-      pulsePath.style.strokeDasharray = `${pulseLen} ${totalLen}`;
-
-      if (pulseTweenRef.current) {
-        pulseTweenRef.current.kill();
+      if (pulseTimelineRef.current) {
+        pulseTimelineRef.current.kill();
       }
+
+      const progressObj = { p: 0 };
+
+      const resetVisuals = () => {
+        gsap.set([traveledPath, bodyPath, headPath], { opacity: 1 });
+        stepItemRefs.current.forEach((item) => {
+          item?.classList.remove("is-current", "is-traveled");
+        });
+      };
+
+      const tl = gsap.timeline({
+        repeat: -1,
+        defaults: { ease: "none" },
+      });
+
+      tl.call(resetVisuals);
 
       // Single continuous animation with constant velocity:
       // Glides straight, loops 540° around Node 1, glides straight to Node 2, loops 540° around Node 2, etc.
-      pulseTweenRef.current = gsap.fromTo(
-        pulsePath,
-        { strokeDashoffset: pulseLen },
-        {
-          strokeDashoffset: -totalLen,
-          duration: 7.2,
-          ease: "none",
-          repeat: -1,
-        }
-      );
+      // Head is thick (7.2px), body tapers (4.4px), already traveled path stays lit (2.2px thin)
+      tl.to(progressObj, {
+        p: 1,
+        duration: 8.5,
+        ease: "none",
+        onUpdate: () => {
+          const headDist = progressObj.p * totalLen;
+
+          // 1. Thin Already-traveled path (persists from 0 up to headDist)
+          traveledPath.style.strokeDasharray = `${headDist} ${totalLen + 50}`;
+          traveledPath.style.strokeDashoffset = "0";
+
+          // 2. Snake body (length ~240px, tapers down behind headDist)
+          const lenB = Math.min(headDist, 240);
+          const startB = headDist - lenB;
+          bodyPath.style.strokeDasharray = `${lenB} ${totalLen + 50}`;
+          bodyPath.style.strokeDashoffset = `${-startB}`;
+
+          // 3. Thick Snake head ("shaper matha mota" - length ~50px leading plasma tip)
+          const lenH = Math.min(headDist, 50);
+          const startH = headDist - lenH;
+          headPath.style.strokeDasharray = `${lenH} ${totalLen + 50}`;
+          headPath.style.strokeDashoffset = `${-startH}`;
+
+          // 4. Update Node active and traveled discovery states
+          const ranges = nodeRangesRef.current;
+          stepItemRefs.current.forEach((item, idx) => {
+            if (!item || !ranges[idx]) return;
+            const { start, end } = ranges[idx];
+            if (headDist >= start && headDist <= end) {
+              item.classList.add("is-current");
+              item.classList.remove("is-traveled");
+            } else if (headDist > end) {
+              item.classList.add("is-traveled");
+              item.classList.remove("is-current");
+            } else {
+              item.classList.remove("is-current", "is-traveled");
+            }
+          });
+        },
+      });
+
+      // Hold all 4 completed illuminated steps in synergy for 1.2s
+      tl.to({}, { duration: 1.2 });
+
+      // Smoothly fade out the completed trail before repeating
+      tl.to([traveledPath, bodyPath, headPath], {
+        opacity: 0,
+        duration: 0.7,
+        ease: "power2.inOut",
+        onComplete: () => {
+          stepItemRefs.current.forEach((item) => {
+            item?.classList.remove("is-current", "is-traveled");
+          });
+        },
+      });
+
+      pulseTimelineRef.current = tl;
     } catch {
       // Fallback if SVG geometry is calculating
     }
 
     return () => {
-      if (pulseTweenRef.current) {
-        pulseTweenRef.current.kill();
+      if (pulseTimelineRef.current) {
+        pulseTimelineRef.current.kill();
       }
     };
   }, [pathD]);
@@ -293,10 +385,10 @@ export default function ProcessSection() {
       ([entry]) => {
         if (entry.isIntersecting) {
           video.play().catch(() => undefined);
-          pulseTweenRef.current?.resume();
+          pulseTimelineRef.current?.resume();
         } else {
           video.pause();
-          pulseTweenRef.current?.pause();
+          pulseTimelineRef.current?.pause();
         }
       },
       { threshold: 0.08 }
@@ -450,18 +542,33 @@ export default function ProcessSection() {
               overflow: "visible",
             }}
           >
-            {/* 1. Base Circuit Guide Wire (straight lines + icon borders in one continuous wire) */}
+            {/* 0. Base Circuit Guide Wire (Continuous dormant unvisited path) */}
             {pathD && <path d={pathD} className="circuit-wire-base" />}
 
-            {/* 2. Soft Atmospheric Ambient Glow */}
-            {pathD && <path d={pathD} className="circuit-wire-glow" />}
-
-            {/* 3. The Single Continuous Traveling Energy Pulse (loops 540° around each icon + travels straight lines) */}
+            {/* 1. Thin Already-Traveled Path (Persists behind the snake, showing traveled path) */}
             {pathD && (
               <path
                 d={pathD}
-                className="circuit-wire-pulse"
-                ref={pulsePathRef}
+                className="circuit-wire-traveled"
+                ref={traveledPathRef}
+              />
+            )}
+
+            {/* 2. Medium Snake Body (Smooth taper right behind the head) */}
+            {pathD && (
+              <path
+                d={pathD}
+                className="circuit-wire-body"
+                ref={bodyPathRef}
+              />
+            )}
+
+            {/* 3. Thick Snake Head ("Shaper Matha" - Bold leading plasma tip) */}
+            {pathD && (
+              <path
+                d={pathD}
+                className="circuit-wire-head"
+                ref={headPathRef}
               />
             )}
           </svg>
@@ -471,7 +578,13 @@ export default function ProcessSection() {
             {steps.map((step, index) => {
               const IconComponent = step.icon;
               return (
-                <div className="process-step-item" key={step.num}>
+                <div
+                  className="process-step-item"
+                  key={step.num}
+                  ref={(el) => {
+                    stepItemRefs.current[index] = el;
+                  }}
+                >
                   {/* Circular Node Wrapper (Ref captured for exact pixel alignment with the 540° circuit) */}
                   <div
                     className="process-node-wrapper"

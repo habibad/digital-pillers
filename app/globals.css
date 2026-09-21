@@ -1304,30 +1304,43 @@ img,video,canvas{max-width:100%}
   overflow: visible;
 }
 
-/* 1. Base Circuit Wire (Continuous path for straight lines AND 540° circular borders) */
+/* 0. Base Circuit Guide Wire (Continuous dormant unvisited path) */
 .circuit-wire-base {
-  stroke: rgba(147, 197, 253, 0.24);
-  stroke-width: 1.6;
+  stroke: rgba(147, 197, 253, 0.16);
+  stroke-width: 1.4;
   fill: none;
-  filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.3));
+  filter: drop-shadow(0 0 4px rgba(59, 130, 246, 0.2));
 }
 
-/* 2. Soft Atmospheric Ambient Glow */
-.circuit-wire-glow {
-  stroke: rgba(37, 99, 235, 0.28);
-  stroke-width: 6;
-  fill: none;
-  filter: blur(5px);
-  opacity: 0.85;
-}
-
-/* 3. The Single Continuous Traveling Energy Pulse (540° around each icon + straight lines) */
-.circuit-wire-pulse {
-  stroke: #ffffff;
-  stroke-width: 3.5;
+/* 1. Thin Already-Traveled Path (Persists behind the snake, showing where it already traveled) */
+.circuit-wire-traveled {
+  stroke: #38bdf8;
+  stroke-width: 2.2;
   stroke-linecap: round;
   fill: none;
-  filter: drop-shadow(0 0 8px #ffffff) drop-shadow(0 0 18px #38bdf8) drop-shadow(0 0 32px #2563eb);
+  filter: drop-shadow(0 0 5px #38bdf8) drop-shadow(0 0 12px rgba(37, 99, 235, 0.65));
+  opacity: 0.95;
+  transition: opacity 0.4s ease;
+}
+
+/* 2. Medium Snake Body (Smooth taper right behind the head) */
+.circuit-wire-body {
+  stroke: #93c5fd;
+  stroke-width: 4.4;
+  stroke-linecap: round;
+  fill: none;
+  filter: drop-shadow(0 0 8px #60a5fa) drop-shadow(0 0 18px rgba(56, 189, 248, 0.75));
+  transition: opacity 0.4s ease;
+}
+
+/* 3. Thick Snake Head ("Shaper Matha" - Bold leading plasma tip) */
+.circuit-wire-head {
+  stroke: #ffffff;
+  stroke-width: 7.2;
+  stroke-linecap: round;
+  fill: none;
+  filter: drop-shadow(0 0 8px #ffffff) drop-shadow(0 0 18px #38bdf8) drop-shadow(0 0 34px #2563eb);
+  transition: opacity 0.4s ease;
 }
 
 /* Steps Row */
@@ -1409,6 +1422,60 @@ img,video,canvas{max-width:100%}
   color: #ffffff;
   transform: scale(1.08);
   filter: drop-shadow(0 0 16px rgba(147, 197, 253, 0.95));
+}
+
+/* Traveling Snake Interactive Node Discovery States */
+.process-step-item.is-current .process-node-glow-halo {
+  opacity: 1;
+  transform: scale(1.2);
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.75) 0%, rgba(37, 99, 235, 0.4) 60%, transparent 80%);
+  filter: blur(14px);
+}
+
+.process-step-item.is-current .process-node-core {
+  border-color: rgba(147, 197, 253, 0.85);
+  box-shadow: 0 0 35px rgba(56, 189, 248, 0.75), inset 0 0 20px rgba(96, 165, 250, 0.45);
+  transform: scale(1.05);
+}
+
+.process-step-item.is-current .process-step-icon {
+  color: #ffffff;
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 16px #ffffff) drop-shadow(0 0 28px #38bdf8);
+}
+
+.process-step-item.is-current .process-step-number {
+  color: #ffffff;
+  text-shadow: 0 0 12px #38bdf8;
+}
+
+.process-step-item.is-current .process-step-title {
+  color: #60a5fa;
+  text-shadow: 0 0 12px rgba(96, 165, 250, 0.7);
+}
+
+/* Already traveled state: remains illuminated after the snake head has passed */
+.process-step-item.is-traveled .process-node-glow-halo {
+  opacity: 0.52;
+  transform: scale(1.04);
+}
+
+.process-step-item.is-traveled .process-node-core {
+  border-color: rgba(147, 197, 253, 0.5);
+  box-shadow: 0 0 22px rgba(37, 99, 235, 0.45), inset 0 0 14px rgba(56, 189, 248, 0.25);
+}
+
+.process-step-item.is-traveled .process-step-icon {
+  color: #e0f2fe;
+  filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.8));
+}
+
+.process-step-item.is-traveled .process-step-number {
+  color: #93c5fd;
+}
+
+.process-step-item.is-traveled .process-step-title {
+  color: #ffffff;
 }
 
 /* Step Typography */

@@ -1333,16 +1333,19 @@ img,video,canvas{max-width:100%}
   transform-origin: left center;
 }
 
-/* Continuously streaming electric light energy pulse */
+/* Streaming electric energy pulse traveling between nodes */
 .process-line-pulse {
   position: absolute;
-  top: -2px;
-  bottom: -2px;
-  width: 160px;
-  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.5) 25%, #ffffff 50%, rgba(56, 189, 248, 0.5) 75%, transparent);
-  box-shadow: 0 0 14px #ffffff, 0 0 28px #38bdf8, 0 0 45px rgba(37, 99, 235, 0.9);
-  animation: processLineTravel 3.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  top: -3px;
+  bottom: -3px;
+  width: 140px;
+  margin-left: -70px;
+  background: radial-gradient(ellipse at center, #ffffff 0%, #38bdf8 35%, rgba(37, 99, 235, 0.8) 70%, transparent 100%);
+  box-shadow: 0 0 16px #ffffff, 0 0 30px #38bdf8, 0 0 50px rgba(37, 99, 235, 0.95);
   border-radius: 999px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 4;
 }
 
 /* Steps Row */
@@ -1375,15 +1378,16 @@ img,video,canvas{max-width:100%}
   place-items: center;
 }
 
-/* Continuous ambient outer neon halo */
+/* Outer neon halo that surges when the pulse arrives */
 .process-node-glow-halo {
   position: absolute;
-  inset: 6px;
+  inset: 4px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.38) 0%, rgba(37, 99, 235, 0.18) 55%, transparent 75%);
-  filter: blur(8px);
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.45) 0%, rgba(37, 99, 235, 0.22) 55%, transparent 75%);
+  filter: blur(10px);
   pointer-events: none;
-  animation: haloBreath 2.6s ease-in-out infinite alternate;
+  opacity: 0.18;
+  transition: opacity 0.3s ease;
 }
 
 .process-node-ring {
@@ -1394,31 +1398,24 @@ img,video,canvas{max-width:100%}
   pointer-events: none;
 }
 
+/* Clean, elegant static glass border */
 .ring-base {
   stroke: rgba(147, 197, 253, 0.22);
   stroke-width: 1.5;
   fill: none;
 }
 
-/* Continuously breathing ambient neon ring */
-.ring-ambient {
-  stroke: rgba(59, 130, 246, 0.45);
-  stroke-width: 1.5;
-  fill: none;
-  filter: drop-shadow(0 0 8px rgba(37, 99, 235, 0.75));
-  animation: ringBreath 2.6s ease-in-out infinite alternate;
-}
-
-/* Continuously rotating electric light sweep */
-.ring-sweep {
-  stroke-width: 2.6;
-  stroke-dasharray: 70 190;
+/* Dynamic sweep arc that travels 360° around the icon when the pulse loops */
+.process-discover-sweep {
+  stroke-width: 3.2;
+  stroke-dasharray: 95 163;
   stroke-linecap: round;
   fill: none;
-  transform-box: view-box;
+  transform: rotate(180deg);
   transform-origin: 44px 44px;
-  animation: ringSweepRotate 3.2s linear infinite;
-  filter: drop-shadow(0 0 10px #60a5fa) drop-shadow(0 0 16px rgba(37, 99, 235, 0.8));
+  transform-box: view-box;
+  opacity: 0;
+  filter: drop-shadow(0 0 10px #ffffff) drop-shadow(0 0 20px #38bdf8) drop-shadow(0 0 32px rgba(37, 99, 235, 0.9));
 }
 
 .process-node-core {
@@ -1505,30 +1502,10 @@ img,video,canvas{max-width:100%}
   color: #e2e8f0;
 }
 
-/* Continuous Animations */
-@keyframes ringSweepRotate {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes ringBreath {
-  0% { opacity: 0.4; filter: drop-shadow(0 0 6px rgba(37, 99, 235, 0.5)); }
-  100% { opacity: 1; filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.9)); }
-}
-
-@keyframes haloBreath {
-  0% { opacity: 0.45; transform: scale(0.96); }
-  100% { opacity: 0.85; transform: scale(1.04); }
-}
-
+/* Continuous Ambient Glow Animations */
 @keyframes lineGlowBreathe {
-  0% { opacity: 0.55; filter: blur(5px); }
-  100% { opacity: 0.95; filter: blur(8px); }
-}
-
-@keyframes processLineTravel {
-  0% { left: -160px; }
-  100% { left: 100%; }
+  0% { opacity: 0.5; filter: blur(5px); }
+  100% { opacity: 0.9; filter: blur(8px); }
 }
 
 @keyframes processDotPulse {

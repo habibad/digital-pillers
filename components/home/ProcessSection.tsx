@@ -165,22 +165,27 @@ export default function ProcessSection() {
     return () => observer.disconnect();
   }, []);
 
-  // GSAP scroll entrance animation
+  // GSAP animations: Staged Scroll Entrance + Continuous Traveling Discovery Pulse
   useEffect(() => {
     const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (isReduced || !sectionRef.current) return;
 
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({
+      // 1. Entrance timeline
+      const entranceTl = gsap.timeline({
         paused: true,
         defaults: { ease: "power3.out" },
+        onComplete: () => {
+          discoveryLoopTl.play();
+        },
       });
 
-      tl.fromTo(
-        ".process-eyebrow",
-        { y: 14, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.6 }
-      )
+      entranceTl
+        .fromTo(
+          ".process-eyebrow",
+          { y: 14, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.6 }
+        )
         .fromTo(
           ".process-headline-text",
           { yPercent: 40, opacity: 0 },
@@ -212,14 +217,121 @@ export default function ProcessSection() {
           "-=0.5"
         );
 
+      // 2. Continuous Traveling Discovery Circuit Loop
+      // The streaming energy pulse travels along the connecting line,
+      // loops around each icon's circular border (discovering it),
+      // and proceeds through the full path continuously.
+      const discoveryLoopTl = gsap.timeline({
+        paused: true,
+        repeat: -1,
+        defaults: { ease: "power1.inOut" },
+      });
+
+      const nodeCount = 4;
+      const nodes = [0, 1, 2, 3];
+
+      // Initial positions
+      gsap.set(".process-discover-sweep", { strokeDashoffset: 258, opacity: 0 });
+      gsap.set(".process-line-pulse", { left: "0%", opacity: 0 });
+      gsap.set(".process-node-glow-halo", { opacity: 0.18, scale: 0.96 });
+
+      nodes.forEach((i) => {
+        // Line pulse travels from previous node to current node
+        if (i > 0) {
+          const prevPos = `${((i - 1) / (nodeCount - 1)) * 100}%`;
+          const targetPos = `${(i / (nodeCount - 1)) * 100}%`;
+
+          discoveryLoopTl
+            .fromTo(
+              ".process-line-pulse",
+              { left: prevPos, opacity: 0 },
+              { opacity: 1, duration: 0.12 }
+            )
+            .to(".process-line-pulse", {
+              left: targetPos,
+              duration: 0.75,
+              ease: "power1.inOut",
+            })
+            .to(".process-line-pulse", {
+              opacity: 0,
+              duration: 0.1,
+            });
+        }
+
+        // Pulse arrives at Node i: loops 360° around circular border (discovering the node)
+        const sweepSelector = `.process-step-item:nth-child(${i + 1}) .process-discover-sweep`;
+        const haloSelector = `.process-step-item:nth-child(${i + 1}) .process-node-glow-halo`;
+        const iconSelector = `.process-step-item:nth-child(${i + 1}) .process-step-icon`;
+        const titleSelector = `.process-step-item:nth-child(${i + 1}) .process-step-title`;
+        const numSelector = `.process-step-item:nth-child(${i + 1}) .process-step-number`;
+
+        discoveryLoopTl
+          .set(sweepSelector, { strokeDashoffset: 258, opacity: 1 })
+          .to(sweepSelector, {
+            strokeDashoffset: 0,
+            duration: 0.85,
+            ease: "power1.inOut",
+          })
+          // Node halo & icon illuminate as the pulse loops around
+          .to(
+            haloSelector,
+            {
+              opacity: 1,
+              scale: 1.16,
+              duration: 0.42,
+              yoyo: true,
+              repeat: 1,
+              ease: "sine.inOut",
+            },
+            "<"
+          )
+          .to(
+            iconSelector,
+            {
+              color: "#ffffff",
+              scale: 1.12,
+              duration: 0.42,
+              yoyo: true,
+              repeat: 1,
+              ease: "sine.inOut",
+            },
+            "<"
+          )
+          .to(
+            [titleSelector, numSelector],
+            {
+              color: "#60a5fa",
+              duration: 0.42,
+              yoyo: true,
+              repeat: 1,
+              ease: "sine.inOut",
+            },
+            "<"
+          )
+          .to(
+            sweepSelector,
+            {
+              opacity: 0,
+              duration: 0.15,
+            },
+            "-=0.1"
+          );
+      });
+
+      // Brief rest at end of journey before smoothly repeating
+      discoveryLoopTl.to({}, { duration: 0.5 });
+
+      // Trigger entrance on scroll or immediate if in view
       const observer = new IntersectionObserver(
         ([entry]) => {
           if (entry.isIntersecting) {
-            tl.play();
-            observer.disconnect();
+            entranceTl.play();
+            discoveryLoopTl.play();
+          } else {
+            discoveryLoopTl.pause();
           }
         },
-        { threshold: 0.15 }
+        { threshold: 0.08 }
       );
 
       if (sectionRef.current) {
@@ -307,7 +419,7 @@ export default function ProcessSection() {
             <div className="process-line-base" />
             {/* Entrance reveal progress bar */}
             <div className="process-track-progress" />
-            {/* Continuously streaming light energy pulse */}
+            {/* Continuously streaming light energy pulse that travels between nodes */}
             <div className="process-line-pulse" />
           </div>
 
@@ -317,31 +429,29 @@ export default function ProcessSection() {
               const IconComponent = step.icon;
               return (
                 <div className="process-step-item" key={step.num}>
-                  {/* Glowing Circular Icon Node with Continuously Animated Rotating Border */}
+                  {/* Glowing Circular Icon Node */}
                   <div className="process-node-wrapper">
-                    {/* Ambient Neon Outer Aura */}
+                    {/* Ambient Neon Outer Aura that pulses during discovery */}
                     <div className="process-node-glow-halo" aria-hidden="true" />
 
-                    {/* SVG Circular Border with Active Rotating Lighting Sweep */}
+                    {/* SVG Circular Border: Clean static base ring + Dynamic traveling discovery sweep */}
                     <svg className="process-node-ring" viewBox="0 0 88 88" aria-hidden="true">
                       <defs>
                         <linearGradient id={`sweepGrad-${step.num}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="#93c5fd" stopOpacity="1" />
-                          <stop offset="35%" stopColor="#38bdf8" stopOpacity="0.95" />
-                          <stop offset="70%" stopColor="#2563eb" stopOpacity="0.5" />
-                          <stop offset="100%" stopColor="#1d4ed8" stopOpacity="0" />
+                          <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+                          <stop offset="30%" stopColor="#93c5fd" stopOpacity="1" />
+                          <stop offset="65%" stopColor="#38bdf8" stopOpacity="0.85" />
+                          <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
                         </linearGradient>
                       </defs>
-                      {/* Base static guide ring */}
+                      {/* Clean static guide ring */}
                       <circle cx="44" cy="44" r="41" className="ring-base" />
-                      {/* Ambient breathing glow ring */}
-                      <circle cx="44" cy="44" r="41" className="ring-ambient" />
-                      {/* Active continuously rotating light sweep arc */}
+                      {/* Dynamic discovery arc that sweeps 360° around the icon when the pulse arrives */}
                       <circle
                         cx="44"
                         cy="44"
                         r="41"
-                        className="ring-sweep"
+                        className="process-discover-sweep"
                         stroke={`url(#sweepGrad-${step.num})`}
                       />
                     </svg>

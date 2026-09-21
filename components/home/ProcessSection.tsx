@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import gsap from "gsap";
 
@@ -26,7 +26,6 @@ function AuditIcon({ className }: { className?: string }) {
     >
       <circle cx="13" cy="13" r="8.5" />
       <path d="M19.5 19.5L27 27" strokeWidth="2.2" />
-      {/* Precision reticle accents */}
       <circle cx="13" cy="13" r="3.5" strokeDasharray="2.5 2.5" strokeOpacity="0.85" />
       <path d="M13 7.5V9.5M13 16.5V18.5M7.5 13H9.5M16.5 13H18.5" strokeWidth="1.4" strokeOpacity="0.7" />
     </svg>
@@ -45,12 +44,10 @@ function BuildIcon({ className }: { className?: string }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      {/* 3D isometric system cube */}
       <path d="M16 3.5L27 9.8V22.2L16 28.5L5 22.2V9.8L16 3.5Z" />
       <path d="M16 16L27 9.8" />
       <path d="M16 16V28.5" />
       <path d="M16 16L5 9.8" />
-      {/* Luminous core node */}
       <circle cx="16" cy="16" r="2" fill="currentColor" />
     </svg>
   );
@@ -68,14 +65,10 @@ function LaunchIcon({ className }: { className?: string }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      {/* Aerodynamic rocket hull */}
       <path d="M16 3C16 3 9 7.5 9 17L13.5 21.5C13.5 21.5 16 18 16 16C16 18 18.5 21.5 18.5 21.5L23 17C23 7.5 16 3 16 3Z" />
-      {/* Fins */}
       <path d="M9 17L4.5 19.5L6 23L9.5 21.5" />
       <path d="M23 17L27.5 19.5L26 23L22.5 21.5" />
-      {/* Porthole */}
       <circle cx="16" cy="11.5" r="2" fill="currentColor" />
-      {/* Propulsion thrust vector */}
       <path d="M13.5 23.5L16 28.5L18.5 23.5" strokeWidth="1.5" strokeOpacity="0.85" />
     </svg>
   );
@@ -93,13 +86,10 @@ function ScaleIcon({ className }: { className?: string }) {
       strokeLinejoin="round"
       aria-hidden="true"
     >
-      {/* Base baseline */}
       <path d="M4 27H28" strokeWidth="1.6" />
-      {/* Ascending bars */}
       <rect x="6" y="18" width="4" height="9" rx="1" />
       <rect x="13" y="12" width="4" height="15" rx="1" />
       <rect x="20" y="7" width="4" height="20" rx="1" />
-      {/* Exponential breakout curve & arrow */}
       <path d="M6 14.5L13.5 9L25.5 4" strokeWidth="1.8" strokeOpacity="0.95" />
       <path d="M21 4H25.5V8.5" strokeWidth="1.8" />
     </svg>
@@ -136,8 +126,160 @@ const steps: ProcessStep[] = [
 export default function ProcessSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const timelineWrapRef = useRef<HTMLDivElement>(null);
+  const nodeRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const pulsePathRef = useRef<SVGPathElement>(null);
+  const pulseTweenRef = useRef<gsap.core.Tween | null>(null);
 
-  // Play video reliably when section approaches or enters viewport
+  const [pathD, setPathD] = useState<string>("");
+
+  // Construct a single continuous 540° loop circuit path across all 4 nodes
+  const updateCircuitPath = useCallback(() => {
+    const container = timelineWrapRef.current;
+    if (!container) return;
+
+    const cRect = container.getBoundingClientRect();
+    const nodes = nodeRefs.current.filter(Boolean) as HTMLDivElement[];
+    if (nodes.length !== 4) return;
+
+    const isMobile = window.innerWidth <= 640;
+    const r = 41; // Circular radius matching 88px node
+
+    const points = nodes.map((node) => {
+      const nRect = node.getBoundingClientRect();
+      return {
+        cx: nRect.left - cRect.left + nRect.width / 2,
+        cy: nRect.top - cRect.top + nRect.height / 2,
+      };
+    });
+
+    let d = "";
+
+    if (isMobile) {
+      // Mobile: Vertical flow
+      // Enters top of Node 1, loops 540° (top -> bot -> top -> bot), straight line down to next node
+      const cx = points[0].cx;
+      const startY = Math.max(0, points[0].cy - r - 24);
+      d += `M ${cx} ${startY} L ${cx} ${points[0].cy - r}`;
+
+      points.forEach((pt, idx) => {
+        const cy = pt.cy;
+        const topY = cy - r;
+        const botY = cy + r;
+
+        // 540° loop: 180° to bottom, 180° to top (360°), 180° to bottom (540°)
+        d += ` A ${r} ${r} 0 0 1 ${cx} ${botY}`;
+        d += ` A ${r} ${r} 0 0 1 ${cx} ${topY}`;
+        d += ` A ${r} ${r} 0 0 1 ${cx} ${botY}`;
+
+        if (idx < points.length - 1) {
+          const nextTopY = points[idx + 1].cy - r;
+          d += ` L ${cx} ${nextTopY}`;
+        }
+      });
+    } else {
+      // Desktop: Horizontal flow
+      // Enters left (9 o'clock) of Node 1
+      // Loops 540° around Node 1 (360° full circle + 180° extra to exit at 3 o'clock)
+      // Continues straight line from 3 o'clock of Node 1 to 9 o'clock of Node 2
+      // Repeats through all 4 steps!
+      const cy = points[0].cy;
+      const startX = Math.max(0, points[0].cx - r - 40);
+      d += `M ${startX} ${cy} L ${points[0].cx - r} ${cy}`;
+
+      points.forEach((pt, idx) => {
+        const cx = pt.cx;
+        const leftX = cx - r;
+        const rightX = cx + r;
+
+        // 540° loop around node:
+        // Arc 1 (over top to 3 o'clock): 180°
+        // Arc 2 (under bottom to 9 o'clock): 180° -> 360° full circle
+        // Arc 3 (over top to 3 o'clock): 180° -> 540° total! Exits smoothly on right!
+        d += ` A ${r} ${r} 0 0 1 ${rightX} ${cy}`;
+        d += ` A ${r} ${r} 0 0 1 ${leftX} ${cy}`;
+        d += ` A ${r} ${r} 0 0 1 ${rightX} ${cy}`;
+
+        if (idx < points.length - 1) {
+          const nextLeftX = points[idx + 1].cx - r;
+          // Straight line connects right side of current icon to left side of next icon
+          d += ` L ${nextLeftX} ${cy}`;
+        }
+      });
+    }
+
+    setPathD(d);
+  }, []);
+
+  // Update circuit on mount, window resize, and layout changes
+  useEffect(() => {
+    updateCircuitPath();
+
+    const handleResize = () => {
+      updateCircuitPath();
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    const observer = new ResizeObserver(() => {
+      updateCircuitPath();
+    });
+
+    if (timelineWrapRef.current) {
+      observer.observe(timelineWrapRef.current);
+    }
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      observer.disconnect();
+    };
+  }, [updateCircuitPath]);
+
+  // Animate the single continuous traveling pulse along the 540° circuit
+  useEffect(() => {
+    const pulsePath = pulsePathRef.current;
+    if (!pulsePath || !pathD) return;
+
+    const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (isReduced) return;
+
+    try {
+      const totalLen = pulsePath.getTotalLength();
+      if (!totalLen || isNaN(totalLen)) return;
+
+      // Pulse length (~160px of glowing electric beam)
+      const pulseLen = Math.min(170, totalLen * 0.12);
+
+      pulsePath.style.strokeDasharray = `${pulseLen} ${totalLen}`;
+
+      if (pulseTweenRef.current) {
+        pulseTweenRef.current.kill();
+      }
+
+      // Single continuous animation with constant velocity:
+      // Glides straight, loops 540° around Node 1, glides straight to Node 2, loops 540° around Node 2, etc.
+      pulseTweenRef.current = gsap.fromTo(
+        pulsePath,
+        { strokeDashoffset: pulseLen },
+        {
+          strokeDashoffset: -totalLen,
+          duration: 7.2,
+          ease: "none",
+          repeat: -1,
+        }
+      );
+    } catch {
+      // Fallback if SVG geometry is calculating
+    }
+
+    return () => {
+      if (pulseTweenRef.current) {
+        pulseTweenRef.current.kill();
+      }
+    };
+  }, [pathD]);
+
+  // Video autoplay management
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -151,8 +293,10 @@ export default function ProcessSection() {
       ([entry]) => {
         if (entry.isIntersecting) {
           video.play().catch(() => undefined);
+          pulseTweenRef.current?.resume();
         } else {
           video.pause();
+          pulseTweenRef.current?.pause();
         }
       },
       { threshold: 0.08 }
@@ -165,27 +309,22 @@ export default function ProcessSection() {
     return () => observer.disconnect();
   }, []);
 
-  // GSAP animations: Staged Scroll Entrance + Continuous Traveling Discovery Pulse
+  // GSAP scroll entrance animation
   useEffect(() => {
     const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (isReduced || !sectionRef.current) return;
 
     const ctx = gsap.context(() => {
-      // 1. Entrance timeline
-      const entranceTl = gsap.timeline({
+      const tl = gsap.timeline({
         paused: true,
         defaults: { ease: "power3.out" },
-        onComplete: () => {
-          discoveryLoopTl.play();
-        },
       });
 
-      entranceTl
-        .fromTo(
-          ".process-eyebrow",
-          { y: 14, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.6 }
-        )
+      tl.fromTo(
+        ".process-eyebrow",
+        { y: 14, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6 }
+      )
         .fromTo(
           ".process-headline-text",
           { yPercent: 40, opacity: 0 },
@@ -199,16 +338,10 @@ export default function ProcessSection() {
           "-=0.5"
         )
         .fromTo(
-          ".process-track-progress",
-          { scaleX: 0 },
-          { scaleX: 1, duration: 1.1, ease: "power2.inOut" },
-          "-=0.4"
-        )
-        .fromTo(
           ".process-step-item",
           { y: 30, opacity: 0, scale: 0.94 },
           { y: 0, opacity: 1, scale: 1, duration: 0.7, stagger: 0.12 },
-          "-=0.8"
+          "-=0.6"
         )
         .fromTo(
           ".process-vertical-tagline",
@@ -217,118 +350,10 @@ export default function ProcessSection() {
           "-=0.5"
         );
 
-      // 2. Continuous Traveling Discovery Circuit Loop
-      // The streaming energy pulse travels along the connecting line,
-      // loops around each icon's circular border (discovering it),
-      // and proceeds through the full path continuously.
-      const discoveryLoopTl = gsap.timeline({
-        paused: true,
-        repeat: -1,
-        defaults: { ease: "power1.inOut" },
-      });
-
-      const nodeCount = 4;
-      const nodes = [0, 1, 2, 3];
-
-      // Initial positions
-      gsap.set(".process-discover-sweep", { strokeDashoffset: 258, opacity: 0 });
-      gsap.set(".process-line-pulse", { left: "0%", opacity: 0 });
-      gsap.set(".process-node-glow-halo", { opacity: 0.18, scale: 0.96 });
-
-      nodes.forEach((i) => {
-        // Line pulse travels from previous node to current node
-        if (i > 0) {
-          const prevPos = `${((i - 1) / (nodeCount - 1)) * 100}%`;
-          const targetPos = `${(i / (nodeCount - 1)) * 100}%`;
-
-          discoveryLoopTl
-            .fromTo(
-              ".process-line-pulse",
-              { left: prevPos, opacity: 0 },
-              { opacity: 1, duration: 0.12 }
-            )
-            .to(".process-line-pulse", {
-              left: targetPos,
-              duration: 0.75,
-              ease: "power1.inOut",
-            })
-            .to(".process-line-pulse", {
-              opacity: 0,
-              duration: 0.1,
-            });
-        }
-
-        // Pulse arrives at Node i: loops 360° around circular border (discovering the node)
-        const sweepSelector = `.process-step-item:nth-child(${i + 1}) .process-discover-sweep`;
-        const haloSelector = `.process-step-item:nth-child(${i + 1}) .process-node-glow-halo`;
-        const iconSelector = `.process-step-item:nth-child(${i + 1}) .process-step-icon`;
-        const titleSelector = `.process-step-item:nth-child(${i + 1}) .process-step-title`;
-        const numSelector = `.process-step-item:nth-child(${i + 1}) .process-step-number`;
-
-        discoveryLoopTl
-          .set(sweepSelector, { strokeDashoffset: 258, opacity: 1 })
-          .to(sweepSelector, {
-            strokeDashoffset: 0,
-            duration: 0.85,
-            ease: "power1.inOut",
-          })
-          // Node halo & icon illuminate as the pulse loops around
-          .to(
-            haloSelector,
-            {
-              opacity: 1,
-              scale: 1.16,
-              duration: 0.42,
-              yoyo: true,
-              repeat: 1,
-              ease: "sine.inOut",
-            },
-            "<"
-          )
-          .to(
-            iconSelector,
-            {
-              color: "#ffffff",
-              scale: 1.12,
-              duration: 0.42,
-              yoyo: true,
-              repeat: 1,
-              ease: "sine.inOut",
-            },
-            "<"
-          )
-          .to(
-            [titleSelector, numSelector],
-            {
-              color: "#60a5fa",
-              duration: 0.42,
-              yoyo: true,
-              repeat: 1,
-              ease: "sine.inOut",
-            },
-            "<"
-          )
-          .to(
-            sweepSelector,
-            {
-              opacity: 0,
-              duration: 0.15,
-            },
-            "-=0.1"
-          );
-      });
-
-      // Brief rest at end of journey before smoothly repeating
-      discoveryLoopTl.to({}, { duration: 0.5 });
-
-      // Trigger entrance on scroll or immediate if in view
       const observer = new IntersectionObserver(
         ([entry]) => {
           if (entry.isIntersecting) {
-            entranceTl.play();
-            discoveryLoopTl.play();
-          } else {
-            discoveryLoopTl.pause();
+            tl.play();
           }
         },
         { threshold: 0.08 }
@@ -409,52 +434,53 @@ export default function ProcessSection() {
           </div>
         </div>
 
-        {/* Lower Middle: 4-Step Horizontal Timeline with Connected Animated Glowing Line */}
-        <div className="process-timeline-wrap">
-          {/* Animated Horizontal Glowing Connector Line centered through step 1 to step 4 */}
-          <div className="process-line-track" aria-hidden="true">
-            {/* Atmospheric soft blur beam */}
-            <div className="process-line-glow" />
-            {/* Base neon wire */}
-            <div className="process-line-base" />
-            {/* Entrance reveal progress bar */}
-            <div className="process-track-progress" />
-            {/* Continuously streaming light energy pulse that travels between nodes */}
-            <div className="process-line-pulse" />
-          </div>
+        {/* Lower Middle: 4-Step Process Timeline with Single Continuous 540° Circuit Path */}
+        <div className="process-timeline-wrap" ref={timelineWrapRef}>
+          {/* Continuous SVG Circuit Track Overlay */}
+          <svg
+            className="process-circuit-svg"
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              pointerEvents: "none",
+              zIndex: 1,
+              overflow: "visible",
+            }}
+          >
+            {/* 1. Base Circuit Guide Wire (straight lines + icon borders in one continuous wire) */}
+            {pathD && <path d={pathD} className="circuit-wire-base" />}
+
+            {/* 2. Soft Atmospheric Ambient Glow */}
+            {pathD && <path d={pathD} className="circuit-wire-glow" />}
+
+            {/* 3. The Single Continuous Traveling Energy Pulse (loops 540° around each icon + travels straight lines) */}
+            {pathD && (
+              <path
+                d={pathD}
+                className="circuit-wire-pulse"
+                ref={pulsePathRef}
+              />
+            )}
+          </svg>
 
           {/* 4 Process Step Nodes */}
           <div className="process-steps-row">
-            {steps.map((step) => {
+            {steps.map((step, index) => {
               const IconComponent = step.icon;
               return (
                 <div className="process-step-item" key={step.num}>
-                  {/* Glowing Circular Icon Node */}
-                  <div className="process-node-wrapper">
-                    {/* Ambient Neon Outer Aura that pulses during discovery */}
+                  {/* Circular Node Wrapper (Ref captured for exact pixel alignment with the 540° circuit) */}
+                  <div
+                    className="process-node-wrapper"
+                    ref={(el) => {
+                      nodeRefs.current[index] = el;
+                    }}
+                  >
+                    {/* Ambient Neon Outer Halo */}
                     <div className="process-node-glow-halo" aria-hidden="true" />
-
-                    {/* SVG Circular Border: Clean static base ring + Dynamic traveling discovery sweep */}
-                    <svg className="process-node-ring" viewBox="0 0 88 88" aria-hidden="true">
-                      <defs>
-                        <linearGradient id={`sweepGrad-${step.num}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
-                          <stop offset="30%" stopColor="#93c5fd" stopOpacity="1" />
-                          <stop offset="65%" stopColor="#38bdf8" stopOpacity="0.85" />
-                          <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
-                        </linearGradient>
-                      </defs>
-                      {/* Clean static guide ring */}
-                      <circle cx="44" cy="44" r="41" className="ring-base" />
-                      {/* Dynamic discovery arc that sweeps 360° around the icon when the pulse arrives */}
-                      <circle
-                        cx="44"
-                        cy="44"
-                        r="41"
-                        className="process-discover-sweep"
-                        stroke={`url(#sweepGrad-${step.num})`}
-                      />
-                    </svg>
 
                     {/* Central Glassmorphic Core Container with Icon */}
                     <div className="process-node-core">

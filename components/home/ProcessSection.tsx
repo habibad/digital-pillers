@@ -155,7 +155,7 @@ export default function ProcessSection() {
           video.pause();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.08 }
     );
 
     if (sectionRef.current) {
@@ -171,7 +171,6 @@ export default function ProcessSection() {
     if (isReduced || !sectionRef.current) return;
 
     const ctx = gsap.context(() => {
-      // Create scroll-triggered staged reveal
       const tl = gsap.timeline({
         paused: true,
         defaults: { ease: "power3.out" },
@@ -220,7 +219,7 @@ export default function ProcessSection() {
             observer.disconnect();
           }
         },
-        { threshold: 0.18 }
+        { threshold: 0.15 }
       );
 
       if (sectionRef.current) {
@@ -235,7 +234,7 @@ export default function ProcessSection() {
 
   return (
     <section className="process-section" id="process" ref={sectionRef} aria-label="Our Process">
-      {/* Background Video Layer - Full bleed, visible, with zero full-screen dark overlays */}
+      {/* Background Video Layer - Full bleed, fully visible, zero full-screen dark overlays */}
       <div className="process-video-bg">
         <video
           ref={videoRef}
@@ -248,7 +247,7 @@ export default function ProcessSection() {
           aria-hidden="true"
           className="process-video-element"
         />
-        {/* Extreme top and bottom soft gradient seam for seamless page transitions */}
+        {/* Subtle top & bottom edge vignettes to blend seamlessly into #020509 */}
         <div className="process-seam-top" aria-hidden="true" />
         <div className="process-seam-bottom" aria-hidden="true" />
       </div>
@@ -300,13 +299,15 @@ export default function ProcessSection() {
 
         {/* Lower Middle: 4-Step Horizontal Timeline with Connected Animated Glowing Line */}
         <div className="process-timeline-wrap">
-          {/* Animated Horizontal Glowing Connector Line */}
+          {/* Animated Horizontal Glowing Connector Line centered through step 1 to step 4 */}
           <div className="process-line-track" aria-hidden="true">
-            {/* Base glowing line */}
+            {/* Atmospheric soft blur beam */}
+            <div className="process-line-glow" />
+            {/* Base neon wire */}
             <div className="process-line-base" />
-            {/* Animated entrance scale line */}
+            {/* Entrance reveal progress bar */}
             <div className="process-track-progress" />
-            {/* Continuous flowing light energy wave */}
+            {/* Continuously streaming light energy pulse */}
             <div className="process-line-pulse" />
           </div>
 
@@ -316,22 +317,26 @@ export default function ProcessSection() {
               const IconComponent = step.icon;
               return (
                 <div className="process-step-item" key={step.num}>
-                  {/* Glowing Circular Icon Node with Animated Rotating Sweep */}
+                  {/* Glowing Circular Icon Node with Continuously Animated Rotating Border */}
                   <div className="process-node-wrapper">
+                    {/* Ambient Neon Outer Aura */}
+                    <div className="process-node-glow-halo" aria-hidden="true" />
+
                     {/* SVG Circular Border with Active Rotating Lighting Sweep */}
                     <svg className="process-node-ring" viewBox="0 0 88 88" aria-hidden="true">
                       <defs>
                         <linearGradient id={`sweepGrad-${step.num}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="#60a5fa" stopOpacity="1" />
-                          <stop offset="50%" stopColor="#93c5fd" stopOpacity="0.8" />
-                          <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
+                          <stop offset="0%" stopColor="#93c5fd" stopOpacity="1" />
+                          <stop offset="35%" stopColor="#38bdf8" stopOpacity="0.95" />
+                          <stop offset="70%" stopColor="#2563eb" stopOpacity="0.5" />
+                          <stop offset="100%" stopColor="#1d4ed8" stopOpacity="0" />
                         </linearGradient>
                       </defs>
                       {/* Base static guide ring */}
                       <circle cx="44" cy="44" r="41" className="ring-base" />
                       {/* Ambient breathing glow ring */}
                       <circle cx="44" cy="44" r="41" className="ring-ambient" />
-                      {/* Active rotating light sweep arc */}
+                      {/* Active continuously rotating light sweep arc */}
                       <circle
                         cx="44"
                         cy="44"

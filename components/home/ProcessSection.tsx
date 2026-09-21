@@ -369,15 +369,17 @@ export default function ProcessSection() {
             })}
           </div>
         </div>
-
-        {/* Far-Right Vertical Micro-Copy */}
-        <div className="process-vertical-tagline" aria-hidden="true">
-          <span>IDEAS</span>
-          <span>SYSTEMS</span>
-          <span>GROWTH</span>
-          <span>BEYOND</span>
-        </div>
       </div>
+
+      {/* Far-Right Vertical Micro-Copy - Perfectly aligned with Hero side words */}
+      <aside className="process-vertical-tagline" aria-hidden="true">
+        <div className="process-tagline-stack">
+          <span className="process-tagline-word">IDEAS</span>
+          <span className="process-tagline-word">SYSTEMS</span>
+          <span className="process-tagline-word">GROWTH</span>
+          <span className="process-tagline-word">BEYOND</span>
+        </div>
+      </aside>
     </section>
   );
 }

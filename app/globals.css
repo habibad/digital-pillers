@@ -1263,23 +1263,28 @@ img,video,canvas{max-width:100%}
   transform: translateX(4px);
 }
 
-/* Far-Right Vertical Micro-Copy */
+/* Far-Right Vertical Micro-Copy - Harmonized with Hero */
 .process-vertical-tagline {
   position: absolute;
-  right: -24px;
-  top: 50%;
-  transform: translateY(-50%);
+  right: 48px;
+  top: 36%;
+  z-index: 9;
+  pointer-events: none;
+}
+.process-tagline-stack {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.35em;
+  align-items: center;
+  gap: 12px;
+}
+.process-tagline-word {
+  writing-mode: vertical-rl;
+  font-size: 8.5px;
+  letter-spacing: 0.32em;
+  color: #586b84;
+  font-weight: 650;
   text-transform: uppercase;
-  color: rgba(148, 163, 184, 0.48);
-  pointer-events: none;
-  text-align: right;
-  z-index: 10;
+  opacity: 0.85;
 }
 
 /* Timeline Wrap & Connected Animated Glowing Line */

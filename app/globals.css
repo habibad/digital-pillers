@@ -1315,32 +1315,50 @@ img,video,canvas{max-width:100%}
 /* 1. Thin Already-Traveled Path (Persists behind the snake, showing where it already traveled) */
 .circuit-wire-traveled {
   stroke: #38bdf8;
-  stroke-width: 2.2;
+  stroke-width: 1.8;
   stroke-linecap: round;
   fill: none;
-  filter: drop-shadow(0 0 5px #38bdf8) drop-shadow(0 0 12px rgba(37, 99, 235, 0.65));
+  filter: drop-shadow(0 0 4px #38bdf8) drop-shadow(0 0 10px rgba(37, 99, 235, 0.5));
   opacity: 0.95;
   transition: opacity 0.4s ease;
 }
 
-/* 2. Medium Snake Body (Smooth taper right behind the head) */
-.circuit-wire-body {
-  stroke: #93c5fd;
-  stroke-width: 4.4;
+/* 2. Tail Taper (3.0px deep cyan trailing section) */
+.circuit-wire-tail {
+  stroke: #0284c7;
+  stroke-width: 3.0;
   stroke-linecap: round;
   fill: none;
-  filter: drop-shadow(0 0 8px #60a5fa) drop-shadow(0 0 18px rgba(56, 189, 248, 0.75));
+  filter: drop-shadow(0 0 6px rgba(37, 99, 235, 0.6));
   transition: opacity 0.4s ease;
 }
 
-/* 3. Thick Snake Head ("Shaper Matha" - Bold leading plasma tip) */
-.circuit-wire-head {
-  stroke: #ffffff;
-  stroke-width: 7.2;
+/* 3. Mid Snake Body (4.2px electric sky-blue torso) */
+.circuit-wire-mid-body {
+  stroke: #38bdf8;
+  stroke-width: 4.2;
   stroke-linecap: round;
   fill: none;
-  filter: drop-shadow(0 0 8px #ffffff) drop-shadow(0 0 18px #38bdf8) drop-shadow(0 0 34px #2563eb);
+  filter: drop-shadow(0 2px 5px rgba(2, 6, 23, 0.7)) drop-shadow(0 0 8px #2563eb);
   transition: opacity 0.4s ease;
+}
+
+/* 4. Upper Snake Body (5.5px luminous light-cyan neck) */
+.circuit-wire-upper-body {
+  stroke: #e0f2fe;
+  stroke-width: 5.5;
+  stroke-linecap: round;
+  fill: none;
+  filter: drop-shadow(0 2px 6px rgba(2, 6, 23, 0.8)) drop-shadow(0 0 12px #38bdf8);
+  transition: opacity 0.4s ease;
+}
+
+/* 5. Sculpted Snake Head Capsule */
+.snake-head-capsule {
+  pointer-events: none;
+  transform-origin: 0 0;
+  will-change: transform, opacity;
+  transition: opacity 0.3s ease;
 }
 
 /* Steps Row */

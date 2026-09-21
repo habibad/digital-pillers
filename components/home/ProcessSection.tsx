@@ -130,8 +130,10 @@ export default function ProcessSection() {
   const nodeRefs = useRef<(HTMLDivElement | null)[]>([]);
   const stepItemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const traveledPathRef = useRef<SVGPathElement>(null);
-  const bodyPathRef = useRef<SVGPathElement>(null);
-  const headPathRef = useRef<SVGPathElement>(null);
+  const upperBodyPathRef = useRef<SVGPathElement>(null);
+  const midBodyPathRef = useRef<SVGPathElement>(null);
+  const tailPathRef = useRef<SVGPathElement>(null);
+  const headGroupRef = useRef<SVGGElement>(null);
   const pulseTimelineRef = useRef<gsap.core.Timeline | null>(null);
   const nodeRangesRef = useRef<{ start: number; end: number }[]>([]);
 
@@ -266,12 +268,14 @@ export default function ProcessSection() {
   }, [updateCircuitPath]);
 
   // Animate the single continuous traveling pulse along the 540° circuit
-  // with a thick snake head ("shaper matha mota"), tapering body, and thin already-traveled illuminated trail
+  // with a sculpted viper snake head, multi-layer tapering body, and thin already-traveled illuminated trail
   useEffect(() => {
     const traveledPath = traveledPathRef.current;
-    const bodyPath = bodyPathRef.current;
-    const headPath = headPathRef.current;
-    if (!traveledPath || !bodyPath || !headPath || !pathD) return;
+    const upperBodyPath = upperBodyPathRef.current;
+    const midBodyPath = midBodyPathRef.current;
+    const tailPath = tailPathRef.current;
+    const headGroup = headGroupRef.current;
+    if (!traveledPath || !upperBodyPath || !midBodyPath || !tailPath || !headGroup || !pathD) return;
 
     const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (isReduced) return;
@@ -287,7 +291,8 @@ export default function ProcessSection() {
       const progressObj = { p: 0 };
 
       const resetVisuals = () => {
-        gsap.set([traveledPath, bodyPath, headPath], { opacity: 1 });
+        gsap.set([traveledPath, upperBodyPath, midBodyPath, tailPath], { opacity: 1 });
+        if (headGroup) headGroup.style.opacity = "0";
         stepItemRefs.current.forEach((item) => {
           item?.classList.remove("is-current", "is-traveled");
         });
@@ -302,7 +307,6 @@ export default function ProcessSection() {
 
       // Single continuous animation with constant velocity:
       // Glides straight, loops 540° around Node 1, glides straight to Node 2, loops 540° around Node 2, etc.
-      // Head is thick (7.2px), body tapers (4.4px), already traveled path stays lit (2.2px thin)
       tl.to(progressObj, {
         p: 1,
         duration: 8.5,
@@ -314,17 +318,43 @@ export default function ProcessSection() {
           traveledPath.style.strokeDasharray = `${headDist} ${totalLen + 50}`;
           traveledPath.style.strokeDashoffset = "0";
 
-          // 2. Snake body (length ~240px, tapers down behind headDist)
-          const lenB = Math.min(headDist, 240);
-          const startB = headDist - lenB;
-          bodyPath.style.strokeDasharray = `${lenB} ${totalLen + 50}`;
-          bodyPath.style.strokeDashoffset = `${-startB}`;
+          // 2. Snake body layers (Smooth organic taper behind the head)
+          // Layer A: Upper Body (width 5.5px, length 80px, ends at headDist - 10)
+          const endA = Math.max(0, headDist - 10);
+          const lenA = Math.min(endA, 80);
+          const startA = endA - lenA;
+          upperBodyPath.style.strokeDasharray = `${lenA} ${totalLen + 50}`;
+          upperBodyPath.style.strokeDashoffset = `${-startA}`;
 
-          // 3. Thick Snake head ("shaper matha mota" - length ~50px leading plasma tip)
-          const lenH = Math.min(headDist, 50);
-          const startH = headDist - lenH;
-          headPath.style.strokeDasharray = `${lenH} ${totalLen + 50}`;
-          headPath.style.strokeDashoffset = `${-startH}`;
+          // Layer B: Mid Body (width 4.2px, length 180px, ends at headDist - 75)
+          const endB = Math.max(0, headDist - 75);
+          const lenB = Math.min(endB, 180);
+          const startB = endB - lenB;
+          midBodyPath.style.strokeDasharray = `${lenB} ${totalLen + 50}`;
+          midBodyPath.style.strokeDashoffset = `${-startB}`;
+
+          // Layer C: Tail Taper (width 3.0px, length 220px, ends at headDist - 235)
+          const endC = Math.max(0, headDist - 235);
+          const lenC = Math.min(endC, 220);
+          const startC = endC - lenC;
+          tailPath.style.strokeDasharray = `${lenC} ${totalLen + 50}`;
+          tailPath.style.strokeDashoffset = `${-startC}`;
+
+          // 3. Sculpted Viper Snake Head (Tangent-oriented at headDist)
+          if (headDist > 6 && headDist < totalLen - 2) {
+            const pt = traveledPath.getPointAtLength(headDist);
+            const ahead = traveledPath.getPointAtLength(Math.min(totalLen, headDist + 3));
+            const behind = traveledPath.getPointAtLength(Math.max(0, headDist - 3));
+            const angle = Math.atan2(ahead.y - behind.y, ahead.x - behind.x) * (180 / Math.PI);
+
+            headGroup.setAttribute(
+              "transform",
+              `translate(${pt.x}, ${pt.y}) rotate(${angle})`
+            );
+            headGroup.style.opacity = "1";
+          } else {
+            headGroup.style.opacity = "0";
+          }
 
           // 4. Update Node active and traveled discovery states
           const ranges = nodeRangesRef.current;
@@ -348,7 +378,7 @@ export default function ProcessSection() {
       tl.to({}, { duration: 1.2 });
 
       // Smoothly fade out the completed trail before repeating
-      tl.to([traveledPath, bodyPath, headPath], {
+      tl.to([traveledPath, upperBodyPath, midBodyPath, tailPath, headGroup], {
         opacity: 0,
         duration: 0.7,
         ease: "power2.inOut",
@@ -542,6 +572,24 @@ export default function ProcessSection() {
               overflow: "visible",
             }}
           >
+            <defs>
+              {/* Snake Head Linear Gradient: from blinding white snout to electric blue neck */}
+              <linearGradient id="snakeHeadGrad" x1="100%" y1="50%" x2="0%" y2="50%">
+                <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+                <stop offset="35%" stopColor="#e0f2fe" stopOpacity="1" />
+                <stop offset="70%" stopColor="#38bdf8" stopOpacity="0.95" />
+                <stop offset="100%" stopColor="#0284c7" stopOpacity="0.9" />
+              </linearGradient>
+
+              {/* Volumetric Lighting & Ambient Drop Shadow Filter */}
+              <filter id="snakeHeadFilter" x="-80%" y="-80%" width="260%" height="260%">
+                <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#020617" floodOpacity="0.95" />
+                <feDropShadow dx="0" dy="0" stdDeviation="12" floodColor="#1d4ed8" floodOpacity="0.75" />
+                <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#38bdf8" floodOpacity="0.9" />
+                <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor="#ffffff" floodOpacity="0.85" />
+              </filter>
+            </defs>
+
             {/* 0. Base Circuit Guide Wire (Continuous dormant unvisited path) */}
             {pathD && <path d={pathD} className="circuit-wire-base" />}
 
@@ -554,23 +602,109 @@ export default function ProcessSection() {
               />
             )}
 
-            {/* 2. Medium Snake Body (Smooth taper right behind the head) */}
+            {/* 2. Tail Taper (3.0px deep cyan trailing section) */}
             {pathD && (
               <path
                 d={pathD}
-                className="circuit-wire-body"
-                ref={bodyPathRef}
+                className="circuit-wire-tail"
+                ref={tailPathRef}
               />
             )}
 
-            {/* 3. Thick Snake Head ("Shaper Matha" - Bold leading plasma tip) */}
+            {/* 3. Mid Snake Body (4.2px electric sky-blue torso) */}
             {pathD && (
               <path
                 d={pathD}
-                className="circuit-wire-head"
-                ref={headPathRef}
+                className="circuit-wire-mid-body"
+                ref={midBodyPathRef}
               />
             )}
+
+            {/* 4. Upper Snake Body (5.5px luminous light-cyan neck) */}
+            {pathD && (
+              <path
+                d={pathD}
+                className="circuit-wire-upper-body"
+                ref={upperBodyPathRef}
+              />
+            )}
+
+            {/* 5. Sculpted Snake Head ("Shaper Matha" - Aerodynamic contoured viper head with eyes, ridge, and 3D shadow) */}
+            <g ref={headGroupRef} className="snake-head-capsule" style={{ opacity: 0 }}>
+              {/* Cast ambient occlusion shadow underneath head */}
+              <ellipse
+                cx="-2"
+                cy="5"
+                rx="14"
+                ry="6"
+                fill="rgba(2, 6, 23, 0.85)"
+                filter="blur(4px)"
+              />
+
+              {/* Outer atmospheric cyan flare aura */}
+              <path
+                d="M 15 0 C 11 -3.5, 4 -8.5, -2 -8.5 C -7 -8.5, -11 -7, -15 -3.5 L -15 3.5 C -11 7, -7 8.5, -2 8.5 C 4 8.5, 11 3.5, 15 0 Z"
+                fill="none"
+                stroke="#38bdf8"
+                strokeWidth="2.5"
+                filter="drop-shadow(0 0 10px #38bdf8) drop-shadow(0 0 22px #2563eb)"
+                opacity="0.85"
+              />
+
+              {/* Main Sculpted Viper Head Hull */}
+              <path
+                d="M 14 0
+                   C 11 -2.8, 4 -7.2, -2 -7.2
+                   C -6.5 -7.2, -10 -5.8, -14 -3.2
+                   L -14 3.2
+                   C -10 5.8, -6.5 7.2, -2 7.2
+                   C 4 7.2, 11 2.8, 14 0 Z"
+                fill="url(#snakeHeadGrad)"
+                stroke="#ffffff"
+                strokeWidth="1.2"
+                filter="url(#snakeHeadFilter)"
+              />
+
+              {/* Dorsal Spine Ridge Highlight */}
+              <path
+                d="M -12 0 L 9 0"
+                stroke="#ffffff"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                filter="drop-shadow(0 0 4px #ffffff)"
+              />
+
+              {/* Cybernetic Luminescent Eyes / Sensory Slits */}
+              <line
+                x1="1"
+                y1="-3.4"
+                x2="4.8"
+                y2="-2"
+                stroke="#ffffff"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                filter="drop-shadow(0 0 5px #38bdf8)"
+              />
+              <line
+                x1="1"
+                y1="3.4"
+                x2="4.8"
+                y2="2"
+                stroke="#ffffff"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                filter="drop-shadow(0 0 5px #38bdf8)"
+              />
+
+              {/* Snout Diamond Specular Node */}
+              <circle
+                cx="12"
+                cy="0"
+                r="1.8"
+                fill="#ffffff"
+                filter="drop-shadow(0 0 6px #ffffff) drop-shadow(0 0 12px #38bdf8)"
+              />
+            </g>
           </svg>
 
           {/* 4 Process Step Nodes */}

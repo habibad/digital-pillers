@@ -44,7 +44,7 @@ export default function TestimonialsSection() {
         .fromTo(
           ".testimonial-slide-cell",
           { y: 35, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.8, stagger: 0.08 },
+          { y: 0, opacity: 1, duration: 0.8, stagger: 0.08, clearProps: "transform,opacity" },
           "-=0.5"
         )
         .fromTo(

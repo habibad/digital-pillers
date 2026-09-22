@@ -3678,82 +3678,166 @@ canvas {
   will-change: transform;
 }
 
-/* Slide Cell */
+/* Slide Cell - Stepped Height & Scale Hierarchy */
 .testimonial-slide-cell {
   flex-shrink: 0;
-  padding: 12px 0;
+  padding: 16px 0;
   transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.75s ease;
+  transform-origin: center center;
 }
 
+/* Active Center Card (Card A) - Tallest & Full Prominence */
 .testimonial-slide-cell.cell-active {
   z-index: 10;
   transform: scale(1);
   opacity: 1;
 }
 
-.testimonial-slide-cell.cell-secondary {
-  z-index: 1;
-  transform: scale(0.92);
-  opacity: 0.62;
-}
-
-.testimonial-slide-cell.cell-secondary:hover {
-  opacity: 0.85;
-  transform: scale(0.94);
+/* Immediate Left & Right Cards (Card B & Card C) - Visibly Shorter in Height than Active */
+.testimonial-slide-cell.cell-near {
+  z-index: 5;
+  transform: scale(0.88);
+  opacity: 0.72;
   cursor: pointer;
 }
 
-/* Card Geometry & Glassmorphic Styling */
+.testimonial-slide-cell.cell-near:hover {
+  opacity: 0.9;
+  transform: scale(0.91);
+}
+
+/* Outer Half-Visible Secondary Cards (Card D & Card E) - Even Shorter than Near Cards */
+.testimonial-slide-cell.cell-mid {
+  z-index: 2;
+  transform: scale(0.76);
+  opacity: 0.42;
+  cursor: pointer;
+}
+
+.testimonial-slide-cell.cell-mid:hover {
+  opacity: 0.65;
+  transform: scale(0.79);
+}
+
+/* Far / Outlying Cards */
+.testimonial-slide-cell.cell-far {
+  z-index: 1;
+  transform: scale(0.66);
+  opacity: 0.16;
+  pointer-events: none;
+}
+
+/* Fallback / Backward Compatibility */
+.testimonial-slide-cell.cell-secondary {
+  z-index: 2;
+  transform: scale(0.88);
+  opacity: 0.72;
+}
+
+/* Card Geometry & Glassmorphic Styling (matching AnalyticsDashboard) */
 .testimonial-card-item {
   position: relative;
   width: 450px;
   min-height: 248px;
   border-radius: 20px;
-  background: radial-gradient(circle at 50% 0%, rgba(12, 24, 46, 0.72) 0%, rgba(4, 9, 20, 0.9) 100%);
-  backdrop-filter: blur(18px);
-  border: 1px solid rgba(100, 175, 255, 0.22);
+  background:
+    radial-gradient(circle at 65% 25%, rgba(30, 110, 240, 0.12) 0%, transparent 55%),
+    linear-gradient(180deg, rgba(6, 16, 36, 0.28) 0%, rgba(3, 9, 22, 0.38) 100%);
+  backdrop-filter: blur(5px) saturate(140%);
+  -webkit-backdrop-filter: blur(5px) saturate(140%);
+  border: 1px solid rgba(80, 155, 255, 0.3);
+  box-shadow:
+    0 0 24px rgba(20, 100, 240, 0.16),
+    inset 0 1px 0 rgba(140, 200, 255, 0.2),
+    inset 0 0 20px rgba(30, 120, 255, 0.06),
+    0 16px 40px rgba(0, 0, 0, 0.4);
   padding: 34px 36px 26px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  transition: border-color 0.4s ease, box-shadow 0.4s ease, transform 0.25s ease;
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.15s ease-out;
   overflow: hidden;
+}
+
+/* Top Specular Edge Line (matching AnalyticsDashboard .dashboard-panel-glow) */
+.testimonial-card-top-glow {
+  position: absolute;
+  top: 0;
+  left: 6%;
+  right: 6%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(100, 195, 255, 0.65), transparent);
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Interactive 3D Cursor Glare Spotlight */
+.testimonial-card-glare {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  mix-blend-mode: screen;
+  transition: opacity 0.3s ease;
 }
 
 /* Secondary Card Border & Shadow */
 .testimonial-card-item.is-secondary {
-  border-color: rgba(100, 175, 255, 0.18);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(180deg, rgba(6, 16, 36, 0.22) 0%, rgba(3, 8, 20, 0.32) 100%);
+  border-color: rgba(65, 130, 225, 0.24);
+  box-shadow:
+    0 0 18px rgba(20, 100, 240, 0.1),
+    inset 0 1px 0 rgba(140, 200, 255, 0.12),
+    inset 0 0 16px rgba(30, 120, 255, 0.04),
+    0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+.testimonial-card-item.is-secondary:hover {
+  background: linear-gradient(180deg, rgba(8, 22, 48, 0.32) 0%, rgba(4, 12, 28, 0.42) 100%);
+  border-color: rgba(96, 175, 255, 0.6);
+  box-shadow:
+    0 0 0 1px rgba(96, 175, 255, 0.45),
+    0 0 30px rgba(56, 160, 255, 0.32),
+    inset 0 1px 0 rgba(140, 200, 255, 0.25),
+    inset 0 0 22px rgba(56, 160, 255, 0.1),
+    0 20px 48px rgba(0, 0, 0, 0.48);
 }
 
 /* Active Card Electric-Blue Illumination & Breathing Glow */
 .testimonial-card-item.is-active {
-  border-color: rgba(90, 180, 255, 0.85);
+  background:
+    radial-gradient(circle at 65% 20%, rgba(30, 120, 255, 0.15) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(8, 20, 44, 0.3) 0%, rgba(4, 11, 26, 0.4) 100%);
+  border-color: rgba(80, 165, 255, 0.75);
   box-shadow:
-    0 0 0 1.5px rgba(90, 180, 255, 0.85),
-    0 0 24px rgba(40, 140, 255, 0.32),
-    0 0 55px rgba(30, 110, 255, 0.16),
-    inset 0 0 30px rgba(30, 120, 255, 0.08);
+    0 0 0 1.5px rgba(80, 165, 255, 0.7),
+    0 0 32px rgba(30, 120, 255, 0.35),
+    inset 0 1px 0 rgba(140, 200, 255, 0.3),
+    inset 0 0 25px rgba(30, 120, 255, 0.1),
+    0 20px 50px rgba(0, 0, 0, 0.5);
   animation: testimonialBorderBreathe 4.5s ease-in-out infinite;
 }
 
 @keyframes testimonialBorderBreathe {
-
   0%,
   100% {
     box-shadow:
-      0 0 0 1.5px rgba(90, 180, 255, 0.82),
-      0 0 22px rgba(40, 140, 255, 0.28),
-      0 0 50px rgba(30, 110, 255, 0.14),
-      inset 0 0 28px rgba(30, 120, 255, 0.06);
+      0 0 0 1.5px rgba(80, 165, 255, 0.65),
+      0 0 28px rgba(30, 120, 255, 0.3),
+      inset 0 0 24px rgba(30, 120, 255, 0.1),
+      0 20px 50px rgba(0, 0, 0, 0.48);
   }
 
   50% {
     box-shadow:
-      0 0 0 1.5px rgba(147, 197, 253, 0.95),
-      0 0 34px rgba(56, 189, 248, 0.42),
-      0 0 70px rgba(37, 99, 235, 0.24),
-      inset 0 0 36px rgba(56, 189, 248, 0.12);
+      0 0 0 1.5px rgba(120, 195, 255, 0.85),
+      0 0 42px rgba(56, 160, 255, 0.42),
+      inset 0 0 30px rgba(56, 160, 255, 0.16),
+      0 24px 55px rgba(0, 0, 0, 0.55);
   }
 }
 
@@ -3761,7 +3845,7 @@ canvas {
   position: absolute;
   inset: 0;
   border-radius: 20px;
-  background: radial-gradient(circle at 50% -10%, rgba(56, 189, 248, 0.15) 0%, transparent 65%);
+  background: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.18) 0%, transparent 65%);
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.5s ease;
@@ -3773,11 +3857,12 @@ canvas {
 
 .testimonial-card-inner {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
+  transform: translateZ(10px);
 }
 
 /* Quote Typography */

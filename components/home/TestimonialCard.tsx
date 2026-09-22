@@ -7,20 +7,23 @@ import { TestimonialItem } from "@/lib/constants/testimonials";
 interface TestimonialCardProps {
   item: TestimonialItem;
   isActive: boolean;
+  distance?: number;
   onClick?: () => void;
 }
 
 export default function TestimonialCard({
   item,
   isActive,
+  distance = 0,
   onClick,
 }: TestimonialCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
+  const glareRef = useRef<HTMLDivElement>(null);
 
-  // Subtle 1-1.5° cursor tilt only on active card (desktop only)
+  // Cinematic 3D interactive tilt on hover (all cards)
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      if (!isActive || !cardRef.current) return;
+      if (!cardRef.current) return;
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       if (window.matchMedia("(pointer: coarse)").matches) return;
 
@@ -30,24 +33,34 @@ export default function TestimonialCard({
       const centerX = rect.width / 2;
       const centerY = rect.height / 2;
 
-      const rotateX = ((y - centerY) / centerY) * -1.2;
-      const rotateY = ((x - centerX) / centerX) * 1.5;
+      // Cinematic 3D tilt angles (±2.5° X, ±3.5° Y)
+      const rotateX = ((y - centerY) / centerY) * -2.5;
+      const rotateY = ((x - centerX) / centerX) * 3.5;
 
-      cardRef.current.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1, 1, 1)`;
+      cardRef.current.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`;
+
+      // Specular spotlight glare that tracks cursor
+      if (glareRef.current) {
+        glareRef.current.style.opacity = "1";
+        glareRef.current.style.background = `radial-gradient(circle 280px at ${x}px ${y}px, rgba(56, 189, 248, 0.2), transparent 70%)`;
+      }
     },
-    [isActive]
+    []
   );
 
   const handleMouseLeave = useCallback(() => {
     if (!cardRef.current) return;
     cardRef.current.style.transform = "";
+    if (glareRef.current) {
+      glareRef.current.style.opacity = "0";
+    }
   }, []);
 
   return (
     <div
       ref={cardRef}
       className={`testimonial-card-item ${
-        isActive ? "is-active" : "is-secondary"
+        isActive ? "is-active is-distance-0" : `is-secondary is-distance-${distance}`
       }`}
       onClick={onClick}
       onMouseMove={handleMouseMove}
@@ -56,6 +69,12 @@ export default function TestimonialCard({
       aria-roledescription="slide"
       aria-label={`Testimonial from ${item.name}`}
     >
+      {/* Top Specular Edge Line (matching AnalyticsDashboard) */}
+      <div className="testimonial-card-top-glow" aria-hidden="true" />
+
+      {/* Interactive 3D Cursor Glare Spotlight */}
+      <div ref={glareRef} className="testimonial-card-glare" aria-hidden="true" />
+
       {/* Active Glowing Electric Blue Edge & Inner Atmosphere */}
       <div className="testimonial-card-glow-layer" aria-hidden="true" />
       <div className="testimonial-card-border-glow" aria-hidden="true" />

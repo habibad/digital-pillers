@@ -282,17 +282,23 @@ export default function TestimonialCarousel({
       {/* Horizontally Overflowing Track */}
       <div ref={trackRef} className="testimonial-carousel-track">
         {items.map((item, index) => {
-          const isActive = index === currentIndex;
+          const distance = Math.abs(index - currentIndex);
+          const isActive = distance === 0;
+          let cellClass = "cell-far";
+          if (distance === 0) cellClass = "cell-active";
+          else if (distance === 1) cellClass = "cell-near";
+          else if (distance === 2) cellClass = "cell-mid";
+
           return (
             <div
               key={`${item.id}-${index}`}
-              className={`testimonial-slide-cell ${
-                isActive ? "cell-active" : "cell-secondary"
-              }`}
+              className={`testimonial-slide-cell ${cellClass}`}
+              data-distance={distance}
             >
               <TestimonialCard
                 item={item}
                 isActive={isActive}
+                distance={distance}
                 onClick={() => {
                   if (!hasMovedRef.current && !isActive) {
                     goToIndex(index);

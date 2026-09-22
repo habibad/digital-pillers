@@ -2191,34 +2191,50 @@ canvas {
 /* Center Analytics Dashboard Panel */
 .outcomes-dashboard-panel {
   position: relative;
-  border-radius: 22px;
-  background: rgba(6, 14, 28, 0.68);
-  backdrop-filter: blur(18px);
-  border: 1px solid rgba(80, 165, 255, 0.38);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 70% 30%, rgba(30, 110, 240, 0.14) 0%, transparent 55%),
+    radial-gradient(circle at 25% 75%, rgba(15, 80, 200, 0.1) 0%, transparent 50%),
+    rgba(3, 9, 22, 0.2);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  border: 1px solid rgba(80, 165, 255, 0.45);
   box-shadow:
-    0 0 0 1px rgba(90, 175, 255, 0.35),
-    0 0 28px rgba(35, 120, 255, 0.16),
-    inset 0 0 28px rgba(30, 110, 255, 0.05);
+    0 0 0 1px rgba(80, 165, 255, 0.4),
+    0 0 30px rgba(30, 120, 255, 0.28),
+    inset 0 0 25px rgba(30, 120, 255, 0.12),
+    0 20px 50px rgba(0, 0, 0, 0.45);
   padding: 18px;
   transition: border-color 0.35s ease, box-shadow 0.35s ease, transform 0.25s ease;
   animation: dashboardBorderBreathe 5s ease-in-out infinite;
 }
 
-@keyframes dashboardBorderBreathe {
+.dashboard-panel-glow {
+  position: absolute;
+  top: 0;
+  left: 6%;
+  right: 6%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(100, 195, 255, 0.65), transparent);
+  pointer-events: none;
+}
 
+@keyframes dashboardBorderBreathe {
   0%,
   100% {
     box-shadow:
-      0 0 0 1px rgba(90, 175, 255, 0.35),
-      0 0 24px rgba(35, 120, 255, 0.15),
-      inset 0 0 24px rgba(30, 110, 255, 0.04);
+      0 0 0 1px rgba(80, 165, 255, 0.4),
+      0 0 28px rgba(30, 120, 255, 0.25),
+      inset 0 0 24px rgba(30, 120, 255, 0.1),
+      0 20px 50px rgba(0, 0, 0, 0.45);
   }
 
   50% {
     box-shadow:
-      0 0 0 1px rgba(147, 197, 253, 0.55),
-      0 0 34px rgba(56, 189, 248, 0.28),
-      inset 0 0 32px rgba(56, 189, 248, 0.09);
+      0 0 0 1px rgba(120, 195, 255, 0.62),
+      0 0 38px rgba(56, 160, 255, 0.38),
+      inset 0 0 30px rgba(56, 160, 255, 0.16),
+      0 24px 55px rgba(0, 0, 0, 0.52);
   }
 }
 
@@ -2233,18 +2249,22 @@ canvas {
 .dashboard-revenue-card {
   position: relative;
   border-radius: 16px;
-  background: rgba(8, 18, 36, 0.55);
-  border: 1px solid rgba(100, 175, 255, 0.16);
+  background: linear-gradient(180deg, rgba(8, 22, 48, 0.38) 0%, rgba(4, 12, 28, 0.48) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(75, 145, 240, 0.25);
+  box-shadow: inset 0 1px 0 rgba(140, 200, 255, 0.18), 0 4px 20px rgba(0, 0, 0, 0.3);
   padding: 22px 24px 18px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   min-height: 236px;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .revenue-card-label {
-  font-size: 13px;
-  color: #94a3b8;
+  font-size: 13.5px;
+  color: #8da2be;
   font-weight: 400;
   letter-spacing: -0.01em;
   display: block;
@@ -2252,7 +2272,7 @@ canvas {
 }
 
 .revenue-card-value {
-  font-size: clamp(28px, 2.5vw, 36px);
+  font-size: clamp(30px, 2.7vw, 36px);
   font-weight: 600;
   color: #ffffff;
   letter-spacing: -0.025em;
@@ -2264,7 +2284,7 @@ canvas {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 600;
   color: #38bdf8;
   margin-top: 6px;
@@ -2294,9 +2314,9 @@ canvas {
 
 .chart-bar-fill {
   width: 100%;
-  background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
-  border-radius: 3px 3px 0 0;
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+  background: linear-gradient(180deg, #38bdf8 0%, #0077f5 100%);
+  border-radius: 2.5px 2.5px 0 0;
+  box-shadow: 0 0 10px rgba(0, 132, 255, 0.55), 0 0 2px rgba(56, 189, 248, 0.8);
   transform-origin: bottom;
   will-change: transform;
 }
@@ -2311,9 +2331,12 @@ canvas {
 .dashboard-kpi-card {
   position: relative;
   border-radius: 14px;
-  background: rgba(8, 18, 36, 0.55);
-  border: 1px solid rgba(100, 175, 255, 0.16);
-  padding: 18px 18px 16px;
+  background: linear-gradient(180deg, rgba(8, 22, 48, 0.38) 0%, rgba(4, 12, 28, 0.48) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(75, 145, 240, 0.25);
+  box-shadow: inset 0 1px 0 rgba(140, 200, 255, 0.18), 0 4px 18px rgba(0, 0, 0, 0.3);
+  padding: 18px 20px 16px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -2322,8 +2345,9 @@ canvas {
 
 .dashboard-kpi-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(147, 197, 253, 0.38);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(180deg, rgba(12, 32, 68, 0.5) 0%, rgba(6, 18, 38, 0.6) 100%);
+  border-color: rgba(96, 175, 255, 0.5);
+  box-shadow: inset 0 1px 0 rgba(147, 210, 255, 0.32), 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 16px rgba(35, 130, 255, 0.2);
 }
 
 .kpi-card-value {
@@ -2338,7 +2362,7 @@ canvas {
 
 .kpi-card-label {
   font-size: 12.5px;
-  color: #94a3b8;
+  color: #8da2be;
   font-weight: 400;
   letter-spacing: 0.01em;
 }
@@ -2346,16 +2370,19 @@ canvas {
 /* Statement Card */
 .outcomes-statement-card {
   position: relative;
-  border-radius: 20px;
-  background: rgba(6, 14, 28, 0.65);
-  backdrop-filter: blur(18px);
-  border: 1px solid rgba(80, 165, 255, 0.35);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(8, 22, 48, 0.45) 0%, rgba(3, 10, 24, 0.55) 100%);
+  backdrop-filter: blur(10px) saturate(150%);
+  -webkit-backdrop-filter: blur(10px) saturate(150%);
+  border: 1px solid rgba(65, 130, 225, 0.28);
   box-shadow:
-    0 0 0 1px rgba(90, 175, 255, 0.28),
-    0 0 22px rgba(35, 120, 255, 0.14);
-  padding: 28px 24px 22px;
-  height: 100%;
-  min-height: 250px;
+    0 0 24px rgba(20, 100, 240, 0.2),
+    inset 0 0 20px rgba(30, 120, 255, 0.08),
+    0 16px 40px rgba(0, 0, 0, 0.4);
+  padding: 28px 24px 24px;
+  height: auto;
+  min-height: 240px;
+  max-width: 260px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -2364,10 +2391,63 @@ canvas {
 
 .outcomes-statement-card:hover {
   transform: translateY(-3px);
-  border-color: rgba(147, 197, 253, 0.55);
+  border-color: rgba(96, 175, 255, 0.5);
   box-shadow:
-    0 0 0 1px rgba(147, 197, 253, 0.55),
-    0 0 28px rgba(56, 189, 248, 0.26);
+    0 0 32px rgba(56, 160, 255, 0.3),
+    inset 0 0 24px rgba(56, 160, 255, 0.12),
+    0 20px 48px rgba(0, 0, 0, 0.48);
+}
+
+/* 4 Corner Border-Radius Lighting */
+.statement-corner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  z-index: 2;
+  background: transparent;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.statement-corner.corner-tl {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid #38bdf8;
+  border-left: 2px solid #38bdf8;
+  border-top-left-radius: 18px;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.7);
+}
+
+.statement-corner.corner-tr {
+  top: -1px;
+  right: -1px;
+  border-top: 2px solid #38bdf8;
+  border-right: 2px solid #38bdf8;
+  border-top-right-radius: 18px;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.7);
+}
+
+.statement-corner.corner-bl {
+  bottom: -1px;
+  left: -1px;
+  border-bottom: 2px solid #38bdf8;
+  border-left: 2px solid #38bdf8;
+  border-bottom-left-radius: 18px;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.7);
+}
+
+.statement-corner.corner-br {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid #38bdf8;
+  border-right: 2px solid #38bdf8;
+  border-bottom-right-radius: 18px;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.7);
+}
+
+.outcomes-statement-card:hover .statement-corner {
+  border-color: #7dd3fc;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.9);
 }
 
 .statement-card-inner {
@@ -2378,25 +2458,30 @@ canvas {
 }
 
 .statement-card-copy p {
-  font-size: 15px;
-  color: #f1f5f9;
-  line-height: 1.55;
-  margin: 0 0 3px;
-  font-weight: 400;
+  font-size: 18px;
+  color: #ffffff;
+  line-height: 1.42;
+  margin: 0 0 4px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+
+.statement-card-mark {
+  margin-top: 32px;
 }
 
 .statement-card-mark span {
-  font-size: 15px;
-  font-weight: 700;
-  color: #60a5fa;
-  letter-spacing: 2.5px;
-  transition: transform 0.25s ease;
+  font-size: 17px;
+  font-weight: 600;
+  color: #38bdf8;
+  letter-spacing: 3.5px;
+  transition: transform 0.25s ease, color 0.25s ease;
   display: inline-block;
-  margin-top: 18px;
 }
 
 .outcomes-statement-card:hover .statement-card-mark span {
   transform: translateX(3px);
+  color: #7dd3fc;
 }
 
 /* Responsive Outcomes */

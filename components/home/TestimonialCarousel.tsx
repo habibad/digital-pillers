@@ -35,23 +35,27 @@ export default function TestimonialCarousel({
   // Start in middle set: James T. (index 1 in testimonialsData -> index 1 + 6 = 7)
   const [currentIndex, setCurrentIndex] = useState(count + 1);
 
-  // Measure card geometry responsive
+  // Measure card geometry responsive to ensure centered active card + side cards + clipped edges
   const getCardMetrics = useCallback(() => {
     if (typeof window === "undefined") {
-      return { cardWidth: 540, gap: 28 };
+      return { cardWidth: 450, gap: 26 };
     }
     const w = window.innerWidth;
     if (w <= 640) {
-      // Mobile: 82vw card width (max 350px) with 16px gap
-      const cardWidth = Math.min(350, Math.floor(w * 0.82));
-      return { cardWidth, gap: 16 };
+      // Mobile: 84vw card width (max 340px) with 14px gap
+      const cardWidth = Math.min(340, Math.floor(w * 0.84));
+      return { cardWidth, gap: 14 };
     }
     if (w <= 1024) {
-      // Tablet: 460px card with 24px gap
-      return { cardWidth: 460, gap: 24 };
+      // Tablet: 390px card with 20px gap
+      return { cardWidth: 390, gap: 20 };
     }
-    // Desktop: 540px card with 28px gap
-    return { cardWidth: 540, gap: 28 };
+    if (w <= 1380) {
+      // Laptop / Medium desktop: 420px card with 22px gap
+      return { cardWidth: 420, gap: 22 };
+    }
+    // Large desktop (>= 1380px): 450px card with 26px gap
+    return { cardWidth: 450, gap: 26 };
   }, []);
 
   // Compute horizontal translate offset to center slide at `index`

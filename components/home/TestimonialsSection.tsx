@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect } from "react";
+import Image from "next/image";
 import gsap from "gsap";
 import CarouselControls from "./CarouselControls";
 import TestimonialCarousel from "./TestimonialCarousel";
@@ -80,8 +81,17 @@ export default function TestimonialsSection() {
       ref={sectionRef}
       aria-label="Client Testimonials"
     >
-      {/* Subtle Atmospheric Backdrop Layer */}
+      {/* Cinematic Cavern Background & Atmospheric Overlays */}
       <div className="testimonials-backdrop" aria-hidden="true">
+        <Image
+          src="/media/testimonials-bg.png"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="testimonials-bg-image"
+        />
+        <div className="testimonials-overlay-vignette" />
         <div className="testimonials-ambient-glow" />
         <div className="testimonials-seam-top" />
         <div className="testimonials-seam-bottom" />
@@ -93,8 +103,7 @@ export default function TestimonialsSection() {
           {/* Top Left: Eyebrow + Large Elegant Two-line Headline */}
           <div className="testimonials-headline-block">
             <div className="testimonials-eyebrow">
-              <span className="testimonials-eyebrow-dot" />
-              <span>REAL OUTCOMES</span>
+              REAL OUTCOMES
             </div>
             <h2 className="testimonials-headline">
               <span className="testimonials-headline-row">
